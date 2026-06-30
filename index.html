@@ -1,0 +1,398 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Vocabulary Quiz</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e89ff">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        .quiz-container {
+            background-color: #1e1e1e;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .header-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .counter {
+            color: #aaaaaa;
+        }
+        .scores {
+            display: flex;
+            gap: 12px;
+        }
+        .score-wrong {
+            color: #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.15);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .score-right {
+            color: #2ecc71;
+            background-color: rgba(46, 204, 113, 0.15);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .question-title {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        .definition {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #e0e0e0;
+            margin-bottom: 28px;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .option-btn {
+            background-color: #333333;
+            color: #ffffff;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            padding: 18px;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .option-btn:hover:not(:disabled) {
+            background-color: #444444;
+        }
+        .option-btn .prefix {
+            color: #aaaaaa;
+            margin-right: 14px;
+            font-weight: normal;
+            min-width: 20px;
+        }
+        .option-btn.correct {
+            background-color: rgba(46, 204, 113, 0.2) !important;
+            border-color: #2ecc71 !important;
+        }
+        .option-btn.wrong {
+            background-color: rgba(255, 107, 107, 0.2) !important;
+            border-color: #ff6b6b !important;
+        }
+        .action-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .action-btn:hover:not(:disabled) {
+            background-color: #1557b0;
+        }
+        .action-btn:disabled {
+            background-color: #2c2c2c;
+            color: #666666;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header-stats">
+        <span class="counter" id="question-counter">1 из 7</span>
+        <div class="scores">
+            <span class="score-wrong" id="wrong-score">✕ 0</span>
+            <span class="score-right" id="right-score">✓ 0</span>
+        </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button type="button" class="action-btn" id="mode-mcq">Multiple choice</button>
+        <button type="button" class="action-btn" id="mode-write">Write answer</button>
+        <button type="button" class="action-btn" id="mode-match">Matching</button>
+    </div>
+
+    <h1 class="question-title" id="question-index">Вопрос 1</h1>
+    <p class="definition" id="definition-text">Definition will appear here.</p>
+
+    <div class="options-list" id="options-container"></div>
+
+    <div id="write-mode" style="display:none;margin-bottom:12px">
+        <input id="write-input" type="text" placeholder="Type the word" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);margin-bottom:8px;background:transparent;color:var(--text)">
+        <button type="button" class="action-btn" id="check-write">Check answer</button>
+    </div>
+
+    <div id="match-mode" style="display:none;margin-top:8px">
+        <div id="matching-container" style="display:flex;gap:12px;flex-wrap:wrap">
+            <div id="defs" style="flex:1;min-width:220px"></div>
+            <div id="words" style="flex:1;min-width:220px"></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+            <button id="check-match" class="action-btn">Check matching</button>
+            <button id="reset-match" class="action-btn">Reset matching</button>
+        </div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px">
+        <button type="button" class="action-btn" id="next-btn" onclick="loadNextQuestion()" disabled>Следующий</button>
+        <button type="button" class="action-btn" id="retake-btn" onclick="resetQuiz()">Retake test</button>
+    </div>
+</div>
+
+<script>
+const vocabularyPool = [
+    { word: "tinted", def: "having a slight color added" },
+    { word: "marketable", def: "likely to be sold successfully" },
+    { word: "homogenise", def: "to make things uniform or similar" },
+    { word: "inspection", def: "a careful examination" },
+    { word: "embark on", def: "to begin an important activity" },
+    { word: "commence", def: "to begin formally" },
+    { word: "at the mercy of", def: "completely controlled by someone or something" }
+];
+
+let currentQuestionNum = 1;
+const totalQuestions = vocabularyPool.length;
+let rightCount = 0;
+let wrongCount = 0;
+let currentCorrectAnswer = "";
+let hasAnswered = false;
+let questionPool = [];
+const cyrillicPrefixes = ["A", "Б", "В", "Г"];
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function updateStats() {
+    document.getElementById("right-score").textContent = `✓ ${rightCount}`;
+    document.getElementById("wrong-score").textContent = `✕ ${wrongCount}`;
+}
+
+function fillQuestionPool() {
+    questionPool = shuffleArray(vocabularyPool.slice());
+}
+
+function generateQuestion() {
+    hasAnswered = false;
+    document.getElementById("next-btn").disabled = true;
+
+    const correctItem = questionPool.pop();
+    currentCorrectAnswer = correctItem.word;
+
+    document.getElementById("question-counter").textContent = `${currentQuestionNum} из ${totalQuestions}`;
+    document.getElementById("question-index").textContent = `Вопрос ${currentQuestionNum}`;
+    document.getElementById("definition-text").textContent = `Definition: ${correctItem.def}.`;
+
+    let wrongOptions = vocabularyPool
+        .filter(item => item.word !== currentCorrectAnswer)
+        .map(item => item.word);
+
+    wrongOptions = shuffleArray(wrongOptions).slice(0, 3);
+    const choices = shuffleArray([currentCorrectAnswer, ...wrongOptions]);
+
+    const container = document.getElementById("options-container");
+    container.innerHTML = "";
+
+    choices.forEach((choice, index) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option-btn";
+        btn.innerHTML = `<span class="prefix">${cyrillicPrefixes[index]}.</span> ${choice}`;
+        btn.onclick = () => selectOption(btn, choice);
+        container.appendChild(btn);
+    });
+}
+
+function selectOption(selectedBtn, chosenWord) {
+    if (hasAnswered) return;
+    hasAnswered = true;
+
+    const buttons = document.querySelectorAll(".option-btn");
+
+    if (chosenWord === currentCorrectAnswer) {
+        selectedBtn.classList.add("correct");
+        rightCount++;
+    } else {
+        selectedBtn.classList.add("wrong");
+        wrongCount++;
+        buttons.forEach(btn => {
+            if (btn.textContent.trim().endsWith(currentCorrectAnswer)) {
+                btn.classList.add("correct");
+            }
+        });
+    }
+
+    buttons.forEach(btn => btn.disabled = true);
+    document.getElementById("next-btn").disabled = false;
+    updateStats();
+}
+
+function loadNextQuestion() {
+    if (currentQuestionNum < totalQuestions) {
+        currentQuestionNum++;
+        generateQuestion();
+    } else {
+        const completionMessage = wrongCount > 0
+            ? `Тест завершен! Правильно: ${rightCount}, Ошибок: ${wrongCount}. Вы допустили ошибки.`
+            : `Тест завершен! Правильно: ${rightCount}, Ошибок: ${wrongCount}. Отличная работа — ошибок нет!`;
+        alert(completionMessage);
+        resetQuiz();
+    }
+}
+
+function resetQuiz() {
+    currentQuestionNum = 1;
+    rightCount = 0;
+    wrongCount = 0;
+    fillQuestionPool();
+    updateStats();
+    generateQuestion();
+}
+
+window.addEventListener("load", () => {
+    fillQuestionPool();
+    updateStats();
+    generateQuestion();
+});
+</script>
+
+<script>
+// --- Mode handling ---
+let gameMode = 'mcq'; // 'mcq' | 'write' | 'match'
+document.getElementById('mode-mcq').addEventListener('click', () => startMode('mcq'));
+document.getElementById('mode-write').addEventListener('click', () => startMode('write'));
+document.getElementById('mode-match').addEventListener('click', () => startMode('match'));
+
+function startMode(mode){
+    gameMode = mode;
+    document.getElementById('options-container').style.display = mode === 'mcq' ? '' : 'none';
+    document.getElementById('write-mode').style.display = mode === 'write' ? '' : 'none';
+    document.getElementById('match-mode').style.display = mode === 'match' ? '' : 'none';
+    document.getElementById('next-btn').disabled = true;
+    if(mode === 'match') startMatching();
+    else generateQuestion();
+}
+
+// Write mode check
+document.getElementById('check-write').addEventListener('click', () => {
+    const val = document.getElementById('write-input').value.trim().toLowerCase();
+    if(!val) return;
+    if(val === currentCorrectAnswer.toLowerCase()){
+        rightCount++; alert('Correct!');
+    } else { wrongCount++; alert(`Wrong — correct: ${currentCorrectAnswer}`); }
+    updateStats();
+    document.getElementById('next-btn').disabled = false;
+});
+
+// --- Matching mode ---
+let matchAssignments = {}; // defIndex -> word
+function startMatching(){
+    // build defs and words from full pool (no repeats requirement: all vocabs)
+    const defs = vocabularyPool.map((v,i)=>({i,def:v.def,word:v.word}));
+    const words = shuffleArray(vocabularyPool.map(v=>v.word));
+    matchAssignments = {};
+    const defsDiv = document.getElementById('defs');
+    const wordsDiv = document.getElementById('words');
+    defsDiv.innerHTML = '';
+    wordsDiv.innerHTML = '';
+
+    defs.forEach(d => {
+        const box = document.createElement('div');
+        box.className = 'option-btn';
+        box.style.cursor = 'pointer';
+        box.dataset.idx = d.i;
+        box.innerHTML = `<div style="font-size:13px;color:var(--muted);">${d.def}</div><div class="assigned" style="margin-top:8px;color:var(--text);"></div>`;
+        box.addEventListener('click', () => selectDef(box));
+        defsDiv.appendChild(box);
+    });
+
+    words.forEach(w => {
+        const b = document.createElement('button');
+        b.className = 'option-btn';
+        b.textContent = w;
+        b.addEventListener('click', () => assignWordToSelected(b));
+        wordsDiv.appendChild(b);
+    });
+}
+
+let selectedDef = null;
+function selectDef(box){
+    // toggle selection
+    if(selectedDef) selectedDef.style.boxShadow = '';
+    if(selectedDef === box){ selectedDef = null; return; }
+    selectedDef = box; selectedDef.style.boxShadow = '0 6px 18px rgba(110,160,240,0.18)';
+}
+
+function assignWordToSelected(wordBtn){
+    if(!selectedDef) { alert('Select a definition first'); return; }
+    const idx = selectedDef.dataset.idx;
+    const word = wordBtn.textContent;
+    matchAssignments[idx] = word;
+    selectedDef.querySelector('.assigned').textContent = word;
+    // mark the word visually
+    Array.from(document.getElementById('words').children).forEach(b=>{ b.disabled = false; b.style.opacity = 1 });
+    wordBtn.disabled = true; wordBtn.style.opacity = 0.5;
+    selectedDef.style.boxShadow = '';
+    selectedDef = null;
+}
+
+document.getElementById('check-match').addEventListener('click', ()=>{
+    let correct=0, total=0;
+    vocabularyPool.forEach((v,i)=>{
+        total++;
+        if(matchAssignments[i] && matchAssignments[i] === v.word) correct++;
+    });
+    const wrong = total - correct;
+    alert(`Matching complete. Correct: ${correct}, Wrong: ${wrong}`);
+});
+
+document.getElementById('reset-match').addEventListener('click', ()=> startMatching());
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('SW registration failed:', err));
+  });
+}
+</script>
+
+</body>
+</html>
